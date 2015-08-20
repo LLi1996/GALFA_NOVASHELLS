@@ -1,0 +1,9 @@
+This repo contains scrips written (mainly in Python) for finding nova shells in
+the GALFA_HI data set.
+
+The code, however, does not limit itself to finding nova shells. Extraction of
+spectra, integrated intensity maps, velocity channel maps, ect., from GALFA_HI
+cubes can be easily done when provided with a target and a set of coordinates (
+in RA & DEC)
+
+Larry 08202015
