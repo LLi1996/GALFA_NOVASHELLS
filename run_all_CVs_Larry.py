@@ -108,7 +108,7 @@ for x in range(0,numTargets):
         f.write("Integrated intensity map plotted at " + str(datetime.datetime.today()) + "\n")
 
         # channel map
-        pf.makeVelocityChannelMaps(objectName, objectRA, objectDEC, 60, 60, vSeparation=5)
+        pf.makeVelocityChannelMaps(objectName, objectRA, objectDEC, 90, 90, vSeparation=5)
         f.write("Velocity channel maps plotted at " + str(datetime.datetime.today()) + "\n")
 
         # _ALL map
