@@ -243,7 +243,8 @@ def getIntegratedIntensity(minVindex, maxVindex, intAxis = 0, vbinwidth=.18, noN
 
 
 ### PLOTTING SPECTRUM ####################################
-def plotSingleSpectrum(objectName, spectrum, minVzoom=0, maxVzoom=0, setVzoomRange = 'no', spectrumType = 'default', closefig = 'yes'):
+def plotSingleSpectrum(objectName, spectrum, minVzoom=0, maxVzoom=0, setVzoomRange = 'no', spectrumType = 'default', 
+    closefig = 'yes'):
     """
     this funciton plots a figure of the target's spectrum and saves in the the target's foldder
     the figure will contain two graphs:
@@ -368,7 +369,8 @@ def plotSingleSpectrum(objectName, spectrum, minVzoom=0, maxVzoom=0, setVzoomRan
     if closefig == 'yes':
         plt.close()
 
-def plotNearbySpectrum(objectName, centerRA, centerDEC, boxSize, minV=0, maxV=0, setVrange = 'no', closefig = 'yes'):
+def plotNearbySpectrum(objectName, centerRA, centerDEC, boxSize, minV=0, maxV=0, setVrange = 'no', 
+    closefig = 'yes'):
     """
     this function plots the target spectrum and the spectrum of the nearby (the 8 immidiate) squares
     the center square is where the target is
@@ -420,13 +422,20 @@ def plotNearbySpectrum(objectName, centerRA, centerDEC, boxSize, minV=0, maxV=0,
 
 
 ### PLOTTING VELOCITY CHANNEL MAP ####################################
-def makeVelocityChannelMaps(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, vSeparation=5, closefig = 'yes'):
+def makeVelocityChannelMaps(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, vSeparation=5, autoVsepIncrease='yes',
+    closefig = 'yes'):
     """
     this funciton plots the target's velocity channel maps 
     the figure will be centered on the target's systemic velocity, AKA the middle graph have vlsr = gamma
     # note raPlotRange and decPlotRange are expected in pixels (again, 1 pixel = 1 arcMin for us)
     # note the default channel separation is 5 km/s
+    # note if the above channel separation does not include all of objectGammaError in its range then, by default, autoVsepIncrease will increase vSeparation
     """
+
+    # increases the vSeparation if the current setup doesn't include all of objectGamma +- objectGammaError in its range
+    if vSeparation*17 < objectGammaError:
+        vSeparation = (int(objectGammaError) + 1) / 17.0
+
     plotRADECindices = setPlotRange(centerRA, centerDEC, raPlotRange, decPlotRange)
     
     fig = plt.figure(figsize=(9.8,7))
@@ -449,9 +458,9 @@ def makeVelocityChannelMaps(objectName, centerRA, centerDEC, raPlotRange, decPlo
         ax.imshow(plotData, extent=[plotRADECindices[0], plotRADECindices[1], plotRADECindices[2], plotRADECindices[3]], 
             origin='lower', cmap = 'Greys', vmax = maxIntensity)
         if (x == 17):
-            ax.text(plotRADECindices[0]-delta,plotRADECindices[2]+delta, str(graphV[x]) + " km/s", fontsize = 8.1, weight ='bold', color = 'blue')
+            ax.text(plotRADECindices[1],plotRADECindices[2], str(graphV[x]) + " km/s", fontsize = 8.1, weight ='bold', color = 'blue', ha='right', va='bottom')
         else:
-            ax.text(plotRADECindices[0]-delta,plotRADECindices[2]+delta, str(graphV[x]) + " km/s", fontsize = 8.1, color = 'blue')
+            ax.text(plotRADECindices[1],plotRADECindices[2], str(graphV[x]) + " km/s", fontsize = 8.1, color = 'blue', ha='right', va='bottom')
         ax.tick_params(axis = 'x', which = 'major', labelsize = 5.1)
         ax.tick_params(axis = 'y', which = 'major', labelsize = 7.2)
         if (x>=0 and x<=27):
@@ -474,15 +483,23 @@ def makeVelocityChannelMaps(objectName, centerRA, centerDEC, raPlotRange, decPlo
 
 
 ### PLOTTING INTEGRATED INTENSITY MAP ####################################
-def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, minV=0, maxV=0, setVrange = 'no', closefig = 'yes'):
+def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, minV=0, maxV=0, setVrange = 'no', autoVrangeIncrease = 'yes', 
+    closefig = 'yes'):
     """
     this function plots the 2D image (integrated intensity) of a GALFA cube
     # note raPlotRange and decPlotRange are expected in pixels (again, 1 pixel = 1 arcMin for us)
     # note minV and maxV are for setting the velocity range over which integrated intensity is calculated
     # note default ^range would be gamma +- vRange km/s
+    # note default autoVrangeIncrease increases the velocity range when objectGammaError > default velocity range < again note setVrange overwrites this 
     """
+    # default vRange
+    vRange = 15
+
+    # changes vRange depending on the objectGammaError
+    if autoVrangeIncrease == 'yes' and vRange < objectGammaError:
+        vRange = int(objectGammaError) + 1
+
     if setVrange == 'no':
-        vRange = 15
         minV = objectGamma - vRange
         maxV = objectGamma + vRange
     elif setVrange == 'yes':
@@ -546,7 +563,8 @@ def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, dec
 
 
 ### PLOTTING _ALL MAP ####################################
-def makeCombinedFigure(objectName, smallBoxSize, bigBoxSize, minIntV=0, maxIntV=0, setIntensityVrange = 'no', minV = 0, maxV = 0, setVrange = 'no', closefig = 'yes'):
+def makeCombinedFigure(objectName, smallBoxSize, bigBoxSize, minIntV=0, maxIntV=0, setIntensityVrange='no', autoIntVIncrease='yes', minV=0, maxV=0, setVrange='no', 
+    closefig='yes'):
     """
     this functions makes a combined output figure
     includes: integrated intensity maps, target spectrum and on-off spectrum
@@ -557,23 +575,31 @@ def makeCombinedFigure(objectName, smallBoxSize, bigBoxSize, minIntV=0, maxIntV=
     an on spectrum and the zoom-in of that on spectrum, 
     an on-off spectrum and the zoom-in of that on-off spectrum
     # note smallBoxSize and bigBoxSize are expected in pixels (again, 1 pixel = 1 arcMin for us)
-    # note minIntV and maxI tV sets the velocity range over which we compute the integrated intensity 
-    # ^note the default range is objectGamma +- vRange km/s
+    # note minIntV and maxIntV sets the velocity range over which we compute the integrated intensity 
+    # ^note the default range is objectGamma +- vRange km/s and, by default, autoIntVIncrease will increase the intVrange to fit the objectGammaError
     # note minV and maxV sets the zoomed in velocity range for target's spectrum (and on-off spectrum)
     # ^note the default range is objectGamma +- 50 km/s
     """
+    # default intVrange and vRange
+    intVrange = 15
+    vRange = 50
+
+    # changes the intVrange to fit the objectGammaError 
+    if autoIntVIncrease == 'yes' and intVrange < objectGammaError:
+        intVrange = int(objectGammaError) + 1
+
     if setIntensityVrange == 'no':
-        vRange = 15
-        minIntV = objectGamma - vRange
-        maxIntV = objectGamma + vRange
+        minIntV = objectGamma - intVrange
+        maxIntV = objectGamma + intVrange
     elif setIntensityVrange == 'yes':
         if minIntV>maxIntV:
             print "invalid int velocity range"
     else:
         print "makeCombinedFigure call setIntensityVrange field takes in 'yes' or 'no'"
+
     if setVrange == 'no':
-        minV = objectGamma - 50
-        maxV = objectGamma + 50
+        minV = objectGamma - vRange
+        maxV = objectGamma + vRange
     elif setVrange == 'yes':
         if minV>maxV:
             print "invalid velocity range"
