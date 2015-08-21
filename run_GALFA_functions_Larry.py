@@ -434,7 +434,7 @@ def makeVelocityChannelMaps(objectName, centerRA, centerDEC, raPlotRange, decPlo
 
     # increases the vSeparation if the current setup doesn't include all of objectGamma +- objectGammaError in its range
     if vSeparation*17 < objectGammaError:
-        vSeparation = (int(objectGammaError) + 1) / 17.0
+        vSeparation = int((int(objectGammaError)+1)/1.7)/10.0
 
     plotRADECindices = setPlotRange(centerRA, centerDEC, raPlotRange, decPlotRange)
     
