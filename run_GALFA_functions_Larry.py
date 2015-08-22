@@ -213,7 +213,7 @@ def getOnOffSpectrum(objectRA, objectDEC, boxSize=4):
 
 
 ### INTEGRATED INTENSITY ####################################
-def getIntegratedIntensity(minVindex, maxVindex, intAxis = 0, vbinwidth=.18, noNegValues='yes'):
+def getIntegratedIntensity(minVindex, maxVindex, intAxis = 0, vbinwidth=.74, noNegValues='yes', cubeType='wide', plainIntegration='no'):
     '''
     this function calculates the integrated intensity for a given range of velocities
     and returns the full (for the entire cube) integrated intensity map
@@ -221,23 +221,27 @@ def getIntegratedIntensity(minVindex, maxVindex, intAxis = 0, vbinwidth=.18, noN
     # note intAxis: the axis on which the vel is on, intAxis = 0 by default
     # note (minV, maxV): the integration range     
     # note this is largely taken from Yong
-    # note idk what vbinwidth is
+    # note default input cubeType is wide, which means vbinwidth = .74
     '''    
+    if cubeType == 'narrow':
+        vbinwidth = .18
+
     if maxVindex-minVindex<1:
         print 'Velocity Channel mistake!'
         return 0
     else:
-        intIntensity = np.sum(data[minVindex:maxVindex, :, :], axis=intAxis)*vbinwidth
+        intIntensity = np.sum(data[minVindex:maxVindex, :, :], axis=intAxis)
 
-    intIntensity *= 1.823*10**18    # in cm-2, assuming HI is optically thin. Draine, ISM book 10, page 74 # T km/s
-
-    # this sets all the non-positive values to the smallist positive value
-    # ^just setting them to NaNs seem to mess with saving the figure to PDF
-    if noNegValues == 'yes':
-        if np.isnan(intIntensity.sum()) or np.nanmin(intIntensity) <10**18:
-            intIntensity[np.where(intIntensity<10**18)] = np.nan 
-            minPosInt = np.nanmin(intIntensity)
-            intIntensity[np.isnan(intIntensity)] = 10**18
+    if plainIntegration == 'no':
+        intIntensity *= vbinwidth*(1.823*10**18)    # in cm-2, assuming HI is optically thin. Draine, ISM book 10, page 74 # T km/s
+        baseIntensity = (maxVindex-minVindex)*delta * 10**18 
+        # this sets all the non-positive values to the smallist positive value
+        # ^just setting them to NaNs seem to mess with saving the figure to PDF
+        if noNegValues == 'yes':
+            if np.isnan(intIntensity.sum()) or np.nanmin(intIntensity) <baseIntensity:
+                intIntensity[np.where(intIntensity<baseIntensity)] = np.nan 
+                minPosInt = np.nanmin(intIntensity)
+                intIntensity[np.isnan(intIntensity)] = baseIntensity
 
     return intIntensity
 
@@ -513,14 +517,7 @@ def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, dec
     plotRADECindices = setPlotRange(centerRA, centerDEC, raPlotRange, decPlotRange)
     intensityMap = getIntegratedIntensity(minVindex, maxVindex)
     intensityMap = intensityMap[plotRADECindices[6]:plotRADECindices[7], plotRADECindices[4]:plotRADECindices[5]]
-    if np.min(intensityMap) <= 0:
-        indGreater = np.where(intensityMap>0)
-        indZero = np.where(intensityMap==0)
-        indLess = np.where(intensityMap<0)
-        intensityMap[indGreater] = np.log10(intensityMap[indGreater])
-        intensityMap[indLess] = np.log10(-1*intensityMap[indLess])
-    else:
-        intensityMap = np.log10(intensityMap)
+    intensityMap = np.log10(intensityMap)
 
     contourLevelNum = 7
     contourLevel = np.arange(contourLevelNum) * (np.max(intensityMap)-np.min(intensityMap))/(contourLevelNum-1)
@@ -773,14 +770,109 @@ def makeCombinedFigure(objectName, smallBoxSize, bigBoxSize, minIntV=0, maxIntV=
         plt.close()
 
 
+### PLOTTING _S1 MAP ####################################
+def makeS1Map(objectName, centerRA, centerDEC, boxSize,leftGalacticBound=0, rightGalacticBound=0, setGalacticBound='no',
+    closefig='yes'):
+    '''
+    this function plots a figure that's intended for looking at a region in the GALFA cube while ignoring the galacitc emission around vlsr = 0
+    the figure will contain 3 subplots, 
+        center top will be the region's spectrum (zoomed in y)
+        bottom left will be the integrated intensity (not to the correct #) of the half of the spectum which has vlsr < 0
+        bottom right wiill be .  .  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .    vlsr > 0
+    # note the default cutoff for the galactic emission on the left is -50 km/s and on the right is 50 km/s
+    # note the default cutoff for the edge on the left is -600 km/s and on the right is 600 km/s
+    '''
+
+    # left right cut off for velocity in integration
+    leftEdgeBound = -630
+    rightEdgeBound = 630
+    if setGalacticBound == 'no':
+        leftGalacticBound = -100
+        rightGalacticBound = 100
+
+    leftVindex = setVelocityRange(leftEdgeBound, leftGalacticBound)
+    rightVindex = setVelocityRange(rightGalacticBound, rightEdgeBound)
+    print leftVindex, rightVindex
+
+    fig = plt.figure(figsize=(9,6))
+    gs = gridspec.GridSpec(4,2, wspace=0.15, hspace=0.51)
+    ax1 = plt.subplot(gs[0,0:2]) #spectrum
+    #will cycle through ax later for int intensity on left and right
+
+    # spectrum plotting
+    spectrum = getSpectrum(centerRA, centerDEC, boxSize = boxSize, box = 'yes')
+
+    # yLowerBound & yUpperBound are here adjusted to the to the max of the spectrum
+    yLowerBoundFactor = 1.15
+    yUpperBoundFactor = 1.15
+    yUpperBound = yLowerBoundFactor * max(max(spectrum[leftVindex[0]:leftVindex[1]]), max(spectrum[rightVindex[0]:rightVindex[1]]))
+    yLowerBound = yUpperBoundFactor * min(min(spectrum[leftVindex[0]:leftVindex[1]]), min(spectrum[rightVindex[0]:rightVindex[1]]))
+
+    # plots the spectrum
+    ax1.plot(vlsr, spectrum)    
+    ax1.set_xlim(vlsr[0], vlsr[-1])
+    ax1.set_ylim(yLowerBound, yUpperBound)
+
+    # plots lines indication integration range and the horizontal line indicating 0
+    ax1.plot([vlsr[0],vlsr[-1]], [0,0], color = 'black', linewidth = 0.21)
+    ax1.plot([leftEdgeBound, leftEdgeBound, leftGalacticBound, leftGalacticBound, rightGalacticBound, rightGalacticBound, rightEdgeBound, rightEdgeBound], 
+             [yLowerBound, yUpperBound, yUpperBound, yLowerBound, yLowerBound, yUpperBound, yUpperBound, yLowerBound], 
+             color = 'black', linewidth = 0.5)
+
+    # plots the expected velocity as a vertical line with notation
+    ax1.plot([objectGamma,objectGamma], [yLowerBound, yUpperBound], color = 'black', linewidth = 0.18)
+    ax1.text(objectGamma, yUpperBound,
+             "Systemic Velocity = " + str(objectGamma) + " +-" + str(objectGammaError) + " km/s", fontsize = 6, ha = 'center', va = 'top')
+
+    # titles and axis labels
+    ax1.tick_params(axis = 'both', which = 'major', labelsize = 5.1)
+    ax1.set_ylabel("Tb (K)", fontsize = 7.2)
+    ax1.set_xlabel("Vlsr (km/s)", fontsize = 7.2)
+    ax1.set_title(" Spectrum", fontsize = 9)
 
 
+    # plotting the two integrated intensity maps
+    for x in range(2):
+        ax = plt.subplot(gs[1:4,x])
+        if x==0:
+            vIndex = leftVindex
+        else:
+            vIndex = rightVindex
+
+        plotRADECindices = setPlotRange(centerRA, centerDEC, boxSize, boxSize)
+        intensityMap = getIntegratedIntensity(vIndex[0], vIndex[1], plainIntegration='yes')
+        intensityMap = intensityMap[plotRADECindices[6]:plotRADECindices[7], plotRADECindices[4]:plotRADECindices[5]]
+
+        # plotting intensity map
+        ax.imshow(intensityMap, 
+               extent=[plotRADECindices[0], plotRADECindices[1], plotRADECindices[2], plotRADECindices[3]],
+               origin='lower', cmap = 'Greys')
+
+        # plots star marker("+")
+        plt.scatter(objectRA, objectDEC, c='red', marker = '+')
+
+        # plots scale (1 GALFA beam = 4' = 4 pixels)
+        plt.plot([plotRADECindices[0] - (boxSize/30.0)*delta, plotRADECindices[0] - (boxSize/30.0 + 4)*delta],
+                 [plotRADECindices[2] + (boxSize/30.0)*delta, plotRADECindices[2] + (boxSize/30.0)*delta],
+                 color = 'b', linewidth = 1.5)
+        plt.text(plotRADECindices[0] - (boxSize/30.0)*delta, 
+                 plotRADECindices[2] + (boxSize/30.0)*1.5*delta,
+                 "Beam=4'", fontsize = 6.6, color = 'blue')
+
+        # axis and labels 
+        ax.tick_params(axis = 'both', which = 'major', labelsize = 5.1)
+        ax.set_xlim(plotRADECindices[0], plotRADECindices[1])
+        ax.set_ylim(plotRADECindices[2], plotRADECindices[3])
+        ax.set_xlabel("RA (J2000)", fontsize = 7.2)
+        ax.set_ylabel("DEC (J2000)", fontsize = 7.2)
+        ax.set_title("Integrated Intensity", fontsize = 9)
 
 
-
-
-
-
+    fig.suptitle(objectName, fontsize = 12)
+    fileName = objectName + "_s1_maps.pdf"
+    fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+    if closefig == 'yes':
+        plt.close()
 
 
 
