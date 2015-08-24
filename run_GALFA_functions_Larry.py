@@ -771,7 +771,7 @@ def makeCombinedFigure(objectName, smallBoxSize, bigBoxSize, minIntV=0, maxIntV=
 
 
 ### PLOTTING _S1 MAP ####################################
-def makeS1Map(objectName, centerRA, centerDEC, boxSize,leftGalacticBound=0, rightGalacticBound=0, setGalacticBound='no',
+def makeS1Map(objectName, centerRA, centerDEC, boxSize, leftGalacticBound=0, rightGalacticBound=0, setGalacticBound='no',
     closefig='yes'):
     '''
     this function plots a figure that's intended for looking at a region in the GALFA cube while ignoring the galacitc emission around vlsr = 0
@@ -780,7 +780,7 @@ def makeS1Map(objectName, centerRA, centerDEC, boxSize,leftGalacticBound=0, righ
         bottom left will be the integrated intensity (not to the correct #) of the half of the spectum which has vlsr < 0
         bottom right wiill be .  .  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .    vlsr > 0
     # note the default cutoff for the galactic emission on the left is -50 km/s and on the right is 50 km/s
-    # note the default cutoff for the edge on the left is -600 km/s and on the right is 600 km/s
+    # note the default cutoff for the edge on the left is -630 km/s and on the right is 630 km/s
     '''
 
     # left right cut off for velocity in integration
@@ -867,6 +867,19 @@ def makeS1Map(objectName, centerRA, centerDEC, boxSize,leftGalacticBound=0, righ
         ax.set_ylabel("DEC (J2000)", fontsize = 7.2)
         ax.set_title("Integrated Intensity", fontsize = 9)
 
+        # adding the zoom lines
+        coordsA = 'data'
+        coordsB = 'data'
+        xyA = (vlsr[vIndex[0]], yLowerBound)
+        xyB = (plotRADECindices[0], plotRADECindices[3])
+        xyC = (vlsr[vIndex[1]], yLowerBound)
+        xyD = (plotRADECindices[1], plotRADECindices[3])
+
+        con1 = ConnectionPatch(xyA, xyB, coordsA = coordsA, coordsB = coordsB, axesA = ax1, axesB = ax)
+        con2 = ConnectionPatch(xyC, xyD, coordsA = coordsA, coordsB = coordsB, axesA = ax1, axesB = ax)
+
+        ax1.add_artist(con1)
+        ax1.add_artist(con2)
 
     fig.suptitle(objectName, fontsize = 12)
     fileName = objectName + "_s1_maps.pdf"
