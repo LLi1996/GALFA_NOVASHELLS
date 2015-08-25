@@ -90,12 +90,12 @@ for x in range(0,numTargets):
     if up>=45 and down>=45 and left>=45 and right>=45:
         ############################## PLOTTING CALLS ##############################
         # spectrum
-        spectrum = pf.getSpectrum(objectRA, objectDEC, boxSize=8, box='yes')
+        spectrum = pf.getSpectrum(objectRA, objectDEC, boxSize=16, box='yes')
         pf.plotSingleSpectrum(objectName, spectrum)
         f.write("Target spectrum plotted at " + str(datetime.datetime.today()) + "\n")
 
         # on-off spectrum
-        onOffSpectrum = pf.getOnOffSpectrum(objectRA, objectDEC, boxSize=8)
+        onOffSpectrum = pf.getOnOffSpectrum(objectRA, objectDEC, boxSize=16)
         pf.plotSingleSpectrum(objectName, onOffSpectrum[0], spectrumType='on-off')
         f.write("On-off spectrum plotted at " + str(datetime.datetime.today()) + "\n")
 
@@ -105,15 +105,19 @@ for x in range(0,numTargets):
 
         # integrated intensity map
         pf.makeIntegratedIntensityMap(objectName, objectRA, objectDEC, 90, 90)
-        f.write("Integrated intensity map plotted at " + str(datetime.datetime.today()) + "\n")
+        f.write("Integrated intensity map made at " + str(datetime.datetime.today()) + "\n")
 
         # channel map
         pf.makeVelocityChannelMaps(objectName, objectRA, objectDEC, 90, 90, vSeparation=5)
-        f.write("Velocity channel maps plotted at " + str(datetime.datetime.today()) + "\n")
+        f.write("Velocity channel maps made at " + str(datetime.datetime.today()) + "\n")
 
         # _ALL map
         pf.makeCombinedFigure(objectName, 6, 30)
-        f.write("_all map plotted at " + str(datetime.datetime.today()) + "\n")
+        f.write("_all map made at " + str(datetime.datetime.today()) + "\n")
+
+        # _s1 map
+        pf.makeS1Map(objectName, objectRA, objectDEC, 30, 90)
+        f.write("_s1 map made at " + str(datetime.datetime.today()) + "\n")
 
         processed += 1
         f.write("\n" + cycle + " completed for " + objectName + " at " + str(datetime.datetime.today()) + "\n")

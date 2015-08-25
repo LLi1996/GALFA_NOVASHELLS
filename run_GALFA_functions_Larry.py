@@ -10,6 +10,7 @@ This module is written by Larry with input from Yong.
 import os
 import sys
 import numpy as np
+import matplotlib
 import astropy.io.fits as fits
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -771,7 +772,7 @@ def makeCombinedFigure(objectName, smallBoxSize, bigBoxSize, minIntV=0, maxIntV=
 
 
 ### PLOTTING _S1 MAP ####################################
-def makeS1Map(objectName, centerRA, centerDEC, boxSize, leftGalacticBound=0, rightGalacticBound=0, setGalacticBound='no',
+def makeS1Map(objectName, centerRA, centerDEC, spectrumBoxSize, boxSize, leftGalacticBound=0, rightGalacticBound=0, setGalacticBound='no', contour='no',
     closefig='yes'):
     '''
     this function plots a figure that's intended for looking at a region in the GALFA cube while ignoring the galacitc emission around vlsr = 0
@@ -800,7 +801,7 @@ def makeS1Map(objectName, centerRA, centerDEC, boxSize, leftGalacticBound=0, rig
     #will cycle through ax later for int intensity on left and right
 
     # spectrum plotting
-    spectrum = getSpectrum(centerRA, centerDEC, boxSize = boxSize, box = 'yes')
+    spectrum = getSpectrum(centerRA, centerDEC, boxSize = spectrumBoxSize, box = 'yes')
 
     # yLowerBound & yUpperBound are here adjusted to the to the max of the spectrum
     yLowerBoundFactor = 1.15
@@ -845,17 +846,26 @@ def makeS1Map(objectName, centerRA, centerDEC, boxSize, leftGalacticBound=0, rig
 
         # plotting intensity map
         ax.imshow(intensityMap, 
-               extent=[plotRADECindices[0], plotRADECindices[1], plotRADECindices[2], plotRADECindices[3]],
-               origin='lower', cmap = 'Greys')
+                  extent=[plotRADECindices[0], plotRADECindices[1], plotRADECindices[2], plotRADECindices[3]],
+                  origin='lower', cmap = 'Greys')
+
+        # contour stuff
+        if contour == 'yes':
+            intLvl = np.std(intensityMap)
+            contourLevel = [3,5]*intLvl + np.mean(intensityMap)
+            matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
+            ax.contour(intensityMap,
+                       extent=[plotRADECindices[0], plotRADECindices[1], plotRADECindices[2], plotRADECindices[3]],
+                       colors = 'black', linewidths = 0.03, levels = contourLevel)
 
         # plots star marker("+")
-        plt.scatter(objectRA, objectDEC, c='red', marker = '+')
+        ax.scatter(objectRA, objectDEC, c='red', marker = '+')
 
         # plots scale (1 GALFA beam = 4' = 4 pixels)
-        plt.plot([plotRADECindices[0] - (boxSize/30.0)*delta, plotRADECindices[0] - (boxSize/30.0 + 4)*delta],
+        ax.plot([plotRADECindices[0] - (boxSize/30.0)*delta, plotRADECindices[0] - (boxSize/30.0 + 4)*delta],
                  [plotRADECindices[2] + (boxSize/30.0)*delta, plotRADECindices[2] + (boxSize/30.0)*delta],
                  color = 'b', linewidth = 1.5)
-        plt.text(plotRADECindices[0] - (boxSize/30.0)*delta, 
+        ax.text(plotRADECindices[0] - (boxSize/30.0)*delta, 
                  plotRADECindices[2] + (boxSize/30.0)*1.5*delta,
                  "Beam=4'", fontsize = 6.6, color = 'blue')
 
