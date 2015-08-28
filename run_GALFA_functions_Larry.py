@@ -793,7 +793,6 @@ def makeS1Map(objectName, centerRA, centerDEC, spectrumBoxSize, boxSize, leftGal
 
     leftVindex = setVelocityRange(leftEdgeBound, leftGalacticBound)
     rightVindex = setVelocityRange(rightGalacticBound, rightEdgeBound)
-    print leftVindex, rightVindex
 
     fig = plt.figure(figsize=(9,6))
     gs = gridspec.GridSpec(4,2, wspace=0.15, hspace=0.51)
@@ -852,7 +851,7 @@ def makeS1Map(objectName, centerRA, centerDEC, spectrumBoxSize, boxSize, leftGal
         # contour stuff
         if contour == 'yes':
             intLvl = np.std(intensityMap)
-            contourLevel = [3,5]*intLvl + np.mean(intensityMap)
+            contourLevel = [3,15]*intLvl + np.mean(intensityMap) # but really? 3 and 15?
             matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
             ax.contour(intensityMap,
                        extent=[plotRADECindices[0], plotRADECindices[1], plotRADECindices[2], plotRADECindices[3]],
