@@ -9,8 +9,8 @@
 cycle="cycle1/"
 fileEnding="_all_maps.pdf"
 saveSuperDir="_all_targets/"
-saveFolder="_all_maps/"
-saveName="all_all_maps.pdf"
+saveFolder="_fake_all_maps/"
+saveName="fake_all_maps.pdf"
 
 echo -e "\n\nThis script consolidates the files ending in" $fileEnding
 echo -e "current cycle optoin:" $cycle
@@ -23,7 +23,7 @@ cd Results/
 echo "Saving all files ending in" $fileEnding "to:"
 echo -e "\t" $(pwd)/$saveSuperDir$saveFolder
 
-cp */$cycle*$fileEnding $saveSuperDir$saveFolder
+cp fakeTargets/*/$cycle*$fileEnding $saveSuperDir$saveFolder
 
 echo -e "\nNow we will merge all files ending in" $fileEnding "to one file"
 
