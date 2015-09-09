@@ -248,7 +248,7 @@ def getIntegratedIntensity(minVindex, maxVindex, intAxis = 0, vbinwidth=.74, noN
 
 
 ### PLOTTING SPECTRUM ####################################
-def plotSingleSpectrum(objectName, spectrum, minVzoom=0, maxVzoom=0, setVzoomRange = 'no', spectrumType = 'default', 
+def plotSingleSpectrum(objectName, spectrum, minVzoom=0, maxVzoom=0, setVzoomRange = 'no', spectrumType = 'default', saveDir = '', 
     closefig = 'yes'):
     """
     this funciton plots a figure of the target's spectrum and saves in the the target's foldder
@@ -370,11 +370,16 @@ def plotSingleSpectrum(objectName, spectrum, minVzoom=0, maxVzoom=0, setVzoomRan
     ax1.add_artist(con2)
 
     plt.suptitle(objectName + addtionalCaption + " Spectrum", fontsize = 15)
-    fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+
+    if len(saveDir) == 0:
+        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+    else:
+        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
+
     if closefig == 'yes':
         plt.close()
 
-def plotNearbySpectrum(objectName, centerRA, centerDEC, boxSize, minV=0, maxV=0, setVrange = 'no', 
+def plotNearbySpectrum(objectName, centerRA, centerDEC, boxSize, minV=0, maxV=0, setVrange = 'no', saveDir = '',
     closefig = 'yes'):
     """
     this function plots the target spectrum and the spectrum of the nearby (the 8 immidiate) squares
@@ -421,13 +426,17 @@ def plotNearbySpectrum(objectName, centerRA, centerDEC, boxSize, minV=0, maxV=0,
     plt.suptitle(objectName + " & nearby squares", fontsize=12)
 
     fileName = objectName + "_nearby_spectrums.pdf"
-    fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+    if len(saveDir) == 0:
+        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+    else:
+        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
+
     if closefig == 'yes':
         plt.close()
 
 
 ### PLOTTING VELOCITY CHANNEL MAP ####################################
-def makeVelocityChannelMaps(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, vSeparation=5, autoVsepIncrease='yes',
+def makeVelocityChannelMaps(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, vSeparation=5, autoVsepIncrease='yes', saveDir = '',
     closefig = 'yes'):
     """
     this funciton plots the target's velocity channel maps 
@@ -482,13 +491,17 @@ def makeVelocityChannelMaps(objectName, centerRA, centerDEC, raPlotRange, decPlo
     plt.suptitle(objectName + " channel map from GALFA_HI data", fontsize=15)
 
     fileName = objectName + "_channel_map.pdf"
-    fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+    if len(saveDir) == 0:
+        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+    else:
+        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
+
     if closefig == 'yes':
         plt.close()
 
 
 ### PLOTTING INTEGRATED INTENSITY MAP ####################################
-def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, minV=0, maxV=0, setVrange = 'no', autoVrangeIncrease = 'yes', 
+def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, minV=0, maxV=0, setVrange = 'no', autoVrangeIncrease = 'yes', saveDir = '', 
     closefig = 'yes'):
     """
     this function plots the 2D image (integrated intensity) of a GALFA cube
@@ -554,7 +567,11 @@ def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, dec
              "Beam=4'", fontsize = 6.6, color = 'blue')
 
     fileName = objectName + "_image(" + str(raPlotRange/60.) + "*" + str(decPlotRange/60.) + ").pdf"
-    fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+
+    if len(saveDir) == 0:
+        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+    else:
+        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
 
     if closefig == 'yes':
         plt.close()
@@ -562,7 +579,7 @@ def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, dec
 
 ### PLOTTING _ALL MAP ####################################
 def makeCombinedFigure(objectName, smallBoxSize, bigBoxSize, minIntV=0, maxIntV=0, setIntensityVrange='no', autoIntVIncrease='yes', minV=0, maxV=0, setVrange='no', 
-    closefig='yes'):
+    saveDir='', closefig='yes'):
     """
     this functions makes a combined output figure
     includes: integrated intensity maps, target spectrum and on-off spectrum
@@ -766,13 +783,17 @@ def makeCombinedFigure(objectName, smallBoxSize, bigBoxSize, minIntV=0, maxIntV=
 
     plt.suptitle(objectName, fontsize=15)
     fileName = objectName + "_all_maps.pdf"
-    fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+    if len(saveDir) == 0:
+        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+    else:
+        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
+
     if closefig == 'yes':
         plt.close()
 
 
 ### PLOTTING _S1 MAP ####################################
-def makeS1Map(objectName, centerRA, centerDEC, spectrumBoxSize, boxSize, leftGalacticBound=0, rightGalacticBound=0, setGalacticBound='no', contour='no',
+def makeS1Map(objectName, centerRA, centerDEC, spectrumBoxSize, boxSize, leftGalacticBound=0, rightGalacticBound=0, setGalacticBound='no', contour='no', saveDir='',
     closefig='yes'):
     '''
     this function plots a figure that's intended for looking at a region in the GALFA cube while ignoring the galacitc emission around vlsr = 0
@@ -892,7 +913,12 @@ def makeS1Map(objectName, centerRA, centerDEC, spectrumBoxSize, boxSize, leftGal
 
     fig.suptitle(objectName, fontsize = 12)
     fileName = objectName + "_s1_maps.pdf"
-    fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+
+    if len(saveDir) == 0:
+        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
+    else:
+        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
+        
     if closefig == 'yes':
         plt.close()
 
