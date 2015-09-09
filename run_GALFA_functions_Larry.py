@@ -80,9 +80,11 @@ def getTargetCubeinfo(objectRA, objectDEC):
         
     return this_cube_ra, this_cube_dec
 
-def setTargetInfo(name='', raCoord=0, decCoord=0, gamma=0, gammaE=0, c=''):
+def setTargetInfo(name='', raCoord=0, decCoord=0, gamma=0, gammaE=0, c='', saveDir=''):
     """
     this functions adds a few global variables to this module
+
+    #note default saveDirectory will be set to Results/ if not otherwise instructed
     """
     global objectName
     global objectRA
@@ -90,6 +92,7 @@ def setTargetInfo(name='', raCoord=0, decCoord=0, gamma=0, gammaE=0, c=''):
     global objectGamma
     global objectGammaError
     global cycle
+    global saveDirectory
 
     objectName = name
     objectRA = raCoord
@@ -97,13 +100,18 @@ def setTargetInfo(name='', raCoord=0, decCoord=0, gamma=0, gammaE=0, c=''):
     objectGamma = gamma
     objectGammaError = gammaE
     cycle = c
+    print len(saveDir)
+    if len(saveDir) == 0:
+        saveDirectory = 'Results/'
+    else:
+        saveDirectory = saveDir
 
 def checkTargetFolder(objectName, cycleNum):
     """
     this function checks to see if there is a target directory,
     if not, this function creates the target directory
     """
-    dirName = os.path.dirname('Results/' + objectName + '/' + cycleNum + '/')
+    dirName = os.path.dirname(saveDirectory + objectName + '/' + cycleNum + '/')
     if not os.path.exists(dirName):
         os.makedirs(dirName)
 
@@ -248,7 +256,7 @@ def getIntegratedIntensity(minVindex, maxVindex, intAxis = 0, vbinwidth=.74, noN
 
 
 ### PLOTTING SPECTRUM ####################################
-def plotSingleSpectrum(objectName, spectrum, minVzoom=0, maxVzoom=0, setVzoomRange = 'no', spectrumType = 'default', saveDir = '', 
+def plotSingleSpectrum(objectName, spectrum, minVzoom=0, maxVzoom=0, setVzoomRange = 'no', spectrumType = 'default', 
     closefig = 'yes'):
     """
     this funciton plots a figure of the target's spectrum and saves in the the target's foldder
@@ -371,15 +379,12 @@ def plotSingleSpectrum(objectName, spectrum, minVzoom=0, maxVzoom=0, setVzoomRan
 
     plt.suptitle(objectName + addtionalCaption + " Spectrum", fontsize = 15)
 
-    if len(saveDir) == 0:
-        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
-    else:
-        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
+    fig.savefig(saveDirectory + objectName + "/" + cycle + "/" + fileName)
 
     if closefig == 'yes':
         plt.close()
 
-def plotNearbySpectrum(objectName, centerRA, centerDEC, boxSize, minV=0, maxV=0, setVrange = 'no', saveDir = '',
+def plotNearbySpectrum(objectName, centerRA, centerDEC, boxSize, minV=0, maxV=0, setVrange = 'no',
     closefig = 'yes'):
     """
     this function plots the target spectrum and the spectrum of the nearby (the 8 immidiate) squares
@@ -426,17 +431,14 @@ def plotNearbySpectrum(objectName, centerRA, centerDEC, boxSize, minV=0, maxV=0,
     plt.suptitle(objectName + " & nearby squares", fontsize=12)
 
     fileName = objectName + "_nearby_spectrums.pdf"
-    if len(saveDir) == 0:
-        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
-    else:
-        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
+    fig.savefig(saveDirectory + objectName + "/" + cycle + "/" + fileName)
 
     if closefig == 'yes':
         plt.close()
 
 
 ### PLOTTING VELOCITY CHANNEL MAP ####################################
-def makeVelocityChannelMaps(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, vSeparation=5, autoVsepIncrease='yes', saveDir = '',
+def makeVelocityChannelMaps(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, vSeparation=5, autoVsepIncrease='yes',
     closefig = 'yes'):
     """
     this funciton plots the target's velocity channel maps 
@@ -491,17 +493,14 @@ def makeVelocityChannelMaps(objectName, centerRA, centerDEC, raPlotRange, decPlo
     plt.suptitle(objectName + " channel map from GALFA_HI data", fontsize=15)
 
     fileName = objectName + "_channel_map.pdf"
-    if len(saveDir) == 0:
-        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
-    else:
-        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
+    fig.savefig(saveDirectory + objectName + "/" + cycle + "/" + fileName)
 
     if closefig == 'yes':
         plt.close()
 
 
 ### PLOTTING INTEGRATED INTENSITY MAP ####################################
-def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, minV=0, maxV=0, setVrange = 'no', autoVrangeIncrease = 'yes', saveDir = '', 
+def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, decPlotRange, minV=0, maxV=0, setVrange = 'no', autoVrangeIncrease = 'yes',
     closefig = 'yes'):
     """
     this function plots the 2D image (integrated intensity) of a GALFA cube
@@ -568,10 +567,7 @@ def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, dec
 
     fileName = objectName + "_image(" + str(raPlotRange/60.) + "*" + str(decPlotRange/60.) + ").pdf"
 
-    if len(saveDir) == 0:
-        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
-    else:
-        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
+    fig.savefig(saveDirectory + objectName + "/" + cycle + "/" + fileName)
 
     if closefig == 'yes':
         plt.close()
@@ -579,7 +575,7 @@ def makeIntegratedIntensityMap(objectName, centerRA, centerDEC, raPlotRange, dec
 
 ### PLOTTING _ALL MAP ####################################
 def makeCombinedFigure(objectName, smallBoxSize, bigBoxSize, minIntV=0, maxIntV=0, setIntensityVrange='no', autoIntVIncrease='yes', minV=0, maxV=0, setVrange='no', 
-    saveDir='', closefig='yes'):
+    closefig='yes'):
     """
     this functions makes a combined output figure
     includes: integrated intensity maps, target spectrum and on-off spectrum
@@ -783,17 +779,14 @@ def makeCombinedFigure(objectName, smallBoxSize, bigBoxSize, minIntV=0, maxIntV=
 
     plt.suptitle(objectName, fontsize=15)
     fileName = objectName + "_all_maps.pdf"
-    if len(saveDir) == 0:
-        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
-    else:
-        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
+    fig.savefig(saveDirectory + objectName + "/" + cycle + "/" + fileName)
 
     if closefig == 'yes':
         plt.close()
 
 
 ### PLOTTING _S1 MAP ####################################
-def makeS1Map(objectName, centerRA, centerDEC, spectrumBoxSize, boxSize, leftGalacticBound=0, rightGalacticBound=0, setGalacticBound='no', contour='no', saveDir='',
+def makeS1Map(objectName, centerRA, centerDEC, spectrumBoxSize, boxSize, leftGalacticBound=0, rightGalacticBound=0, setGalacticBound='no', contour='no',
     closefig='yes'):
     '''
     this function plots a figure that's intended for looking at a region in the GALFA cube while ignoring the galacitc emission around vlsr = 0
@@ -913,12 +906,8 @@ def makeS1Map(objectName, centerRA, centerDEC, spectrumBoxSize, boxSize, leftGal
 
     fig.suptitle(objectName, fontsize = 12)
     fileName = objectName + "_s1_maps.pdf"
+    fig.savefig(saveDirectory + objectName + "/" + cycle + "/" + fileName)
 
-    if len(saveDir) == 0:
-        fig.savefig("Results/" + objectName + "/" + cycle + "/" + fileName)
-    else:
-        fig.savefig(saveDir + objectName + "/" + cycle + "/" + fileName)
-        
     if closefig == 'yes':
         plt.close()
 
