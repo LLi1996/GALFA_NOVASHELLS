@@ -100,7 +100,6 @@ def setTargetInfo(name='', raCoord=0, decCoord=0, gamma=0, gammaE=0, c='', saveD
     objectGamma = gamma
     objectGammaError = gammaE
     cycle = c
-    print len(saveDir)
     if len(saveDir) == 0:
         saveDirectory = 'Results/'
     else:
