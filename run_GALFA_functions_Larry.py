@@ -105,12 +105,12 @@ def setTargetInfo(name='', raCoord=0, decCoord=0, gamma=0, gammaE=0, c='', saveD
     else:
         saveDirectory = saveDir
 
-def checkTargetFolder(objectName, cycleNum):
+def checkTargetFolder(objectName, cycle):
     """
     this function checks to see if there is a target directory,
     if not, this function creates the target directory
     """
-    dirName = os.path.dirname(saveDirectory + objectName + '/' + cycleNum + '/')
+    dirName = os.path.dirname(saveDirectory + objectName + '/' + cycle + '/')
     if not os.path.exists(dirName):
         os.makedirs(dirName)
 
